@@ -1,31 +1,26 @@
-/*
- * Purpose: Try routing Serial to pins 0 & 1.
- * Board: UNO R4
- * IDE: 1.8.19
- *
- * Usage:
- *
- * By: Clemens Valens
- * Date: 26/6/2023
- */
+#include "analogWave.h"
 
-// Uncomment to route Serial to pins 0 & 1.
-#define NO_USB
-#include <Arduino.h>
+analogWave wave(DAC);
+
+int freq = 1000;  // in hertz, change accordingly
+const int freq_ctrl_pin_vcc = A3;
+const int freq_ctrl_pin = A4;
+const int freq_ctrl_pin_gnd = A5;
 
 void setup(void)
 {
-  Serial.begin(9600);
-#ifndef NO_USB
-  Serial1.begin(9600);
-#endif
+  Serial.begin(115200);
+  pinMode(freq_ctrl_pin_gnd, OUTPUT);
+  digitalWrite(freq_ctrl_pin_gnd,LOW);
+  pinMode(freq_ctrl_pin_vcc, OUTPUT);
+  digitalWrite(freq_ctrl_pin_vcc,HIGH);
+  wave.sine(freq);
 }
 
 void loop(void)
 {
-  Serial.write('$'); // TX on pin 1 if NO_USB is defined
-#ifndef NO_USB
-  Serial1.write('<'); // TX on pin 1 if NO_USB is not defined
-#endif
-  delay(20);
+  freq = map(analogRead(freq_ctrl_pin), 0, 1024, 0, 10000);
+  Serial.println("Frequency is now " + String(freq) + " Hz");
+  wave.freq(freq);
+  delay(100);
 }
